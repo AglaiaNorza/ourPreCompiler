@@ -1,12 +1,13 @@
-Sviluppare un'applicazione che, dato un file contenente del codice C, lo elabori come segue
-1) risolva le direttive #include, ovvero includa il contenuto dei file argomento della direttiva #include;
-2) controlli se sono state dichiarate variabili con nome non valido, ovvero identificatori non validi (ad es. x-ray, two&four, 5brothers);
-3) elimini tutti i commenti;
-4) produca un file di output contenente il codice modificato, ovvero il file di input estenso con gli include e senza commenti;
-5) produca le statistiche di elaborazione riportate nella sezione "Specifiche"
+# myPreCompiler
+myPreCompiler è un'applicazione che, dato un file contenente del codice C, lo elabora come segue
+1) risolve le direttive `#include`, ovvero include il contenuto dei file argomento della direttiva `#include`;
+2) controlla se sono state dichiarate variabili con nome non valido, ovvero identificatori non validi (ad es. x-ray, two&four, 5brothers);
+3) elimina tutti i commenti;
+4) produce un file di output contenente il codice modificato, ovvero il file di input estenso con gli include e senza commenti;
+5) produce le statistiche di elaborazione riportate nella sezione "Specifiche"
 
 ## Assunzioni
-Si puo' assumere che:
+Si può assumere che:
 1) i file inclusi mediante la direttiva `#include` siano memorizzati nella CWD
 2) il file contenente il codice C fornito come input sia costituito dal solo blocco di codice della funzione main e che non ci siano altre funzioni
 3) tutte le variabili locali siano dichiarate all'inizio della funzione main in righe contigue e che le variabili globali siano dichiarate prima del main in righe contigue;
@@ -57,15 +58,14 @@ prima di terminare il programma invia su stdout il risultato del processamento
 prima di terminare il programma invia sullo stdout il risultato del processamento che viene ridirezionato nel file `nome_file_output`.
 
 Il programma myPreCompiler deve altresì poter restituire come risultato, sullo standard output, le seguenti statistiche di elaborazione:
-
-    numero di variabili controllate
-    numero di errori rilevati
-    per ogni errore rilevato, nome del file in cui e' stato rilevato e numero di riga nel file. 
-    numero di righe di commento eliminate
-    numero di file inclusi
-    per il file di input la dimensione in byte ed il numero di righe (pre processamento)
-    per ogni file incluso dimensione in byte e numero di righe (pre processamento)
-    numero di righe e dimensione dell'output
+- numero di variabili controllate
+- numero di errori rilevati
+- per ogni errore rilevato, nome del file in cui e' stato rilevato e numero di riga nel file.
+- numero di righe di commento eliminate
+- numero di file inclusi
+- per il file di input, la dimensione in byte ed il numero di righe (pre-processamento)
+- per ogni file incluso, dimensione in byte e numero di righe (pre-processamento)
+- numero di righe e dimensione dell'output
 
 L'output sopra riportato deve poter essere abilitato/disabilitato mediante l'opzione `-v`, `--verbose`. Ad esempio
 
