@@ -11,7 +11,8 @@ Si può assumere che:
 1) i file inclusi mediante la direttiva `#include` siano memorizzati nella CWD
 2) il file contenente il codice C fornito come input sia costituito dal solo blocco di codice della funzione main e che non ci siano altre funzioni
 3) tutte le variabili locali siano dichiarate all'inizio della funzione main in righe contigue e che le variabili globali siano dichiarate prima del main in righe contigue;
-4) i tipi di dato usati nella dichiarazione delle variabili siano corretti;
+4) i tipi di dato usati nella dichiarazione delle variabili siano corret;
+ ;
 
 ## Specifiche
 ### Input
