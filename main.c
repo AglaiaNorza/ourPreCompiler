@@ -1,9 +1,14 @@
 #include "comments.c"
+#include "globals.h"
+#include "errors.c"
 
 void read_file(char *input, FILE *buffer);
 
 int main(int argc, char *argv[]) {
 	// eseguito senza parametri
+	variables_checked = 0;
+	n_errors = 0;
+	comment_lines_del = 0;
 	if (argc == 1)
 		return 1; // no input file
 	int i = 1;
@@ -12,8 +17,7 @@ int main(int argc, char *argv[]) {
 	char *output;
 	bool verbose = false;
 
-	while (i < argc)
-	{
+	while (i < argc) {
 		// eseguito con un solo parametro: nome del file di input
 		if (argv[1][0] != '-') {
 			input = (char *)calloc(strlen(argv[i]), sizeof(char));
@@ -80,18 +84,21 @@ void read_file(char *input, FILE *buffer) {
 		if (line[0] == '#' && strstr(line, "include")!= NULL) {
 			char *lib_name;
 			int lib_len = line_len - 11;
-			if (line[line_len - 1] == '\n')
-				lib_len--;
+			if (line[line_len - 1] == '\n') lib_len--;
 			lib_name = (char *)calloc(lib_len, sizeof(char));
 			strncpy(lib_name, &line[10], lib_len);
 			printf("%s\n", lib_name);
 			read_file(lib_name, buffer);
 			continue;
 		}
+		// if the line doesn't need to be checked (for variable syntax, etc)
+		int skip = handle_comments(line, buffer);
 
-		bool modified = handle_comments(line, buffer);
-
-		if (!modified) fputs(line, buffer);
+		if(!skip){
+			check_variables(line);
+			fputs(line, buffer);
+		} // altrimenti viene skippata
 	}
 	free(line);
 }
+// 0: non modificata, 1: commento nella linea, -1: skip

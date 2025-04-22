@@ -1,48 +1,41 @@
 #include "comments.h"
 
-bool handle_comments(char* line, FILE *buffer) {
+bool handle_comments(char *line, FILE *buffer) {
 	// lunghezza della linea che leggiamo
 	bool in_comment = false;
 	char *comment;
 
 	// if line was modified
-	bool modified = false;
+	bool skip = false;
 
 	// controlliamo se siamo in un commento e prossimi char sono */
 	if(in_comment && (comment = strchr(line, '*')) != NULL && comment[1]=='/') {
-		in_comment = multiline_comment(line, buffer);
-		modified = true;
-	} else if(in_comment) return modified; // il commento continua per il resto della linea
+		//in_comment = multiline_comment(line);
+	} else if(in_comment) return true; // il commento continua per il resto della linea
 
-	if((comment = strchr(line, '/')) != NULL){
+	if((comment = strchr(line, '/')) != NULL) {
 		if (comment[1]=='/') { 
-			if (line[0]=='/') return modified; // il commento inizia a  carattere 0, possiamo skippare
+			if (line[0]=='/') return true; // il commento inizia a  carattere 0, possiamo skippare
 			
-			append_inline(line, comment, buffer);
+			int index = (int)(comment - line);
+			//strncpy(line, line, index-1);
+			printf("sketchy cp done");
+			line[index] = '\0'; // tagliamo la stringa
 			in_comment = false; // go to next line
 		} else if (comment[1] == '*') { //è stato aperto un multi-line comment
-			in_comment = multiline_comment(line, buffer);
+			//in_comment = multiline_comment(line);
 		}
-		modified = true;
 	}
-	return modified;
-}
-
-// appende la parte iniziale di una riga (che non contiene commenti)
-void append_inline(char *line, char *comment, FILE *buffer) {
-	int index = (int)(comment - line);
-	char cutline[index];
-	strncpy(cutline, line, index-1);
-	fseek(buffer, 0, SEEK_END); // posiziona il puntatore alla fine
-	fputs(cutline, buffer);
-	fputs("\n", buffer);
+	return false;
 }
 
 // gestisce i commenti multilinea
-bool multiline_comment(char *line, FILE* buffer) {
+bool multiline_comment(char *line) {
 	// se siamo in un multiline comment
 	bool multiline_comm = false;
+    char temp[sizeof(line)];
 
+    int k=0;
 	for (int i = 0; i<strlen(line)-1; i++) {
 		if (line[i] == '/' && line[i + 1] == '*') {
 			multiline_comm = true; // entriamo in multiline comment
@@ -51,7 +44,9 @@ bool multiline_comment(char *line, FILE* buffer) {
 		else if (line[i] == '*' && line[i + 1] == '/') {
 			multiline_comm = false; // usciamo da un multiline comment
 			i++;
-		} else if (!multiline_comm) fputc(line[i], buffer); // altrimenti appendiamo carttere a buffer
+		//} else if (!multiline_comm) fputc(line[i], buffer); // altrimenti appendiamo carttere a buffer
+		} else if (!multiline_comm) temp[k++]=line[i];
 	}
+	//strcpy(line, temp);
 	return multiline_comm; // comunica se la prossima riga è un commento
 }
