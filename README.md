@@ -1,4 +1,4 @@
-# myPreCompiler
+# ourPreCompiler
 myPreCompiler è un'applicazione che, dato un file contenente del codice C, lo elabora come segue
 1) risolve le direttive `#include`, ovvero include il contenuto dei file argomento della direttiva `#include`;
 2) controlla se sono state dichiarate variabili con nome non valido, ovvero identificatori non validi (ad es. x-ray, two&four, 5brothers);
