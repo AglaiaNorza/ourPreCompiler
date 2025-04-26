@@ -77,6 +77,7 @@ void read_file(char *input, FILE *buffer) {
 	ssize_t line_len;
 
 	// bool in_comment = false;
+  //getline(&buffer, &size, stdin)
 	while ((line_len = getline(&line, &len, file_in)) != -1) {
 		// char *comment;
 
@@ -86,6 +87,9 @@ void read_file(char *input, FILE *buffer) {
 			int lib_len = line_len - 11;
 			if (line[line_len - 1] == '\n') lib_len--;
 			lib_name = (char *)calloc(lib_len, sizeof(char));
+
+      // char *strncpy(char *str, const char *str2, size_t count)
+      // why this & ?
 			strncpy(lib_name, &line[10], lib_len);
 			printf("%s\n", lib_name);
 			read_file(lib_name, buffer);
