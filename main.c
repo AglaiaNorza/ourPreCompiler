@@ -1,8 +1,14 @@
 #include "comments.c"
-#include "globals.h"
-#include "errors.c"
+#include "variables.c"
 
 void read_file(char *input, FILE *buffer);
+
+extern int variables_checked;
+extern int n_errors;
+extern int comment_lines_del;
+extern int files_included;
+extern int n_lines;
+extern array custom_types;
 
 int main(int argc, char *argv[]) {
 	// eseguito senza parametri
@@ -56,7 +62,10 @@ int main(int argc, char *argv[]) {
 	printf("%s\n", input);
 	FILE *buffer;
 	buffer = fopen("buffer.temp", "w");
+	init_array(&custom_types);
 	read_file(input, buffer);
+	printf("errors: %d\n", n_errors);
+	printf("checked: %d\n", variables_checked);
 }
 
 void read_file(char *input, FILE *buffer) {
@@ -99,7 +108,7 @@ void read_file(char *input, FILE *buffer) {
 		int skip = handle_comments(line, buffer);
 
 		if(!skip){
-			check_variables(line);
+			preprocess_variables(line);
 			fputs(line, buffer);
 		} // altrimenti viene skippata
 	}

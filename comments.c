@@ -10,7 +10,7 @@ bool handle_comments(char *line, FILE *buffer) {
 
 	// controlliamo se siamo in un commento e prossimi char sono */
 	if(in_comment && (comment = strchr(line, '*')) != NULL && comment[1]=='/') {
-		//in_comment = multiline_comment(line);
+		in_comment = multiline_comment(line);
 	} else if(in_comment) return true; // il commento continua per il resto della linea
 
 	if((comment = strchr(line, '/')) != NULL) {
@@ -23,7 +23,7 @@ bool handle_comments(char *line, FILE *buffer) {
 			line[index] = '\0'; // tagliamo la stringa
 			in_comment = false; // go to next line
 		} else if (comment[1] == '*') { //è stato aperto un multi-line comment
-			//in_comment = multiline_comment(line);
+			in_comment = multiline_comment(line);
 		}
 	}
 	return false;
