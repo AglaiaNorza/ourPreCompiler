@@ -1,41 +1,12 @@
-/****
- * Questo commento contiene informazioni sull'autore e sulla licenza di utilizzo
- *
- */ 
-
-
-
-/*la direttiva #define permette di definire una macro ovvero un simbolo.
- * la sintassi e' #define NOME_MACRO VALORE_MACRO
- * Il preprocessore legge la definizione della macro e quando nel codice 
- * incontra il simbolo (NOME_MACRO) lo sostituisce con la definizione.
- * 
- * NOME MACRO DEVE ESSERE UN IDENTIFICATORE VALIDO
- *
- */
-
-#define CONST1 37
-#define PI 3.14
-
-typedef float myFloat-t; 
-
-/*le variabili global sono pericolose*/
-
-int global_counter=0;
-const int 4backup=25;
-
-int main(int argc, char *args[])
-{
-	/*variabili locali*/
-	float average=0; 	double square error; 	char switch; 	int i;
-	/* 
-	 * Qui' il codice per gestire i parametri di input
-	 */
-	for (i=1;i<=10;i++){
-		average=average+i;
-		global_counter++;
-	}
-	average=average/(float) global_counter;
-	square_error = sqrt(average); 
-  	return 0;
-}
+print("ciao"); print("ok, appendi");
+test1
+test33
+test 
+!!!!int ciao; int no;int boh;
+int int int long unsigned boh;
+int int int int int sahur;
+typedef int integer;
+integer ciao = 5;
+const char *no; int 5sah;
+int boh-np;
+int u&i&&;
