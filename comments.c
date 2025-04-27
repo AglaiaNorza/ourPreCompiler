@@ -23,6 +23,7 @@ bool handle_comments(char *line, FILE *buffer) {
 			int index = (int)(comment - line);
 			//strncpy(line, line, index-1);
 			//printf("sketchy cp done");
+			line[index-1] = '\n';
 			line[index] = '\0'; // tagliamo la stringa
 			in_comment = false; // go to next line
 		} else if (comment[1] == '*') { //è stato aperto un multi-line comment
