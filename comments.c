@@ -1,8 +1,11 @@
 #include "comments.h"
 
+extern bool in_comment;
+extern bool multiline_comm;
+
 bool handle_comments(char *line, FILE *buffer) {
 	// lunghezza della linea che leggiamo
-	bool in_comment = false;
+	//bool in_comment = false;
 	char *comment;
 
 	// if line was modified
@@ -19,20 +22,22 @@ bool handle_comments(char *line, FILE *buffer) {
 			
 			int index = (int)(comment - line);
 			//strncpy(line, line, index-1);
-			printf("sketchy cp done");
+			//printf("sketchy cp done");
 			line[index] = '\0'; // tagliamo la stringa
 			in_comment = false; // go to next line
 		} else if (comment[1] == '*') { //è stato aperto un multi-line comment
+			printf("chiamata multiline_comment\n");
+			printf("%s\n", line);
 			in_comment = multiline_comment(line);
 		}
 	}
-	return false;
+	return in_comment;
 }
 
 // gestisce i commenti multilinea
 bool multiline_comment(char *line) {
 	// se siamo in un multiline comment
-	bool multiline_comm = false;
+	//bool multiline_comm = false;
     char temp[sizeof(line)];
 
     int k=0;
@@ -47,6 +52,7 @@ bool multiline_comment(char *line) {
 		//} else if (!multiline_comm) fputc(line[i], buffer); // altrimenti appendiamo carttere a buffer
 		} else if (!multiline_comm) temp[k++]=line[i];
 	}
-	//strcpy(line, temp);
+	temp[k]='\0';
+	strcpy(line, temp);
 	return multiline_comm; // comunica se la prossima riga è un commento
 }

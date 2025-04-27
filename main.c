@@ -10,11 +10,16 @@ extern int files_included;
 extern int n_lines;
 extern array custom_types;
 
+extern bool in_comment;
+extern bool multiline_comm;
+
 int main(int argc, char *argv[]) {
 	// eseguito senza parametri
 	variables_checked = 0;
 	n_errors = 0;
 	comment_lines_del = 0;
+	in_comment = false;
+	multiline_comm = false;
 	if (argc == 1)
 		return 1; // no input file
 	int i = 1;
