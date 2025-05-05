@@ -129,7 +129,7 @@ bool read_file(char *input, FILE *buffer) {
 	file_in = fopen(input, "r");
 	// file input non valido
 	if (file_in == NULL) {
-		printf("errore in apertura\n");
+		printf("errore in apertura sul file %s\n",input);
 		return false;
 	}
 
@@ -151,13 +151,24 @@ bool read_file(char *input, FILE *buffer) {
 			files_included++;
 			
 			char *lib_name;
+			char *last = NULL;
 			int lib_len = line_len - 11;
+			// trova ultima occorrenza di / (trovare input con cartelle)
+			if ((last = strrchr(input, '/'))) {
+				lib_len += (last-input+1);
+			}
 			if (line[line_len - 1] == '\n') lib_len--;
 			lib_name = (char *)calloc(lib_len, sizeof(char));
 
       // char *strncpy(char *str, const char *str2, size_t count)
       // why this & ?
-			strncpy(lib_name, &line[10], lib_len);
+			// modifica lib_name in modo tale da includere il percorso relativo se presente
+			if (last) {
+				strncpy(lib_name, input, last-input+1);
+				strncat(lib_name, &line[10], lib_len-(int)(last-input+1));
+			} else {
+				strncpy(lib_name, &line[10], lib_len);
+			}
 			read_file(lib_name, buffer);
 			continue;
 		}
