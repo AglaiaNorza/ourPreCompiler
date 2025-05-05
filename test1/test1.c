@@ -17,7 +17,7 @@ int main(int argc, char *args[])
 {
 	/*variabili locali*/
 	float average=0; //media
-	double square error; //errore quadratico medio
+	double square_error; //errore quadratico medio
 	char switch; //per parsing input
 	int i;
 	/* 
