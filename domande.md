@@ -7,8 +7,8 @@
 
 things to fix
 - [x] passare un path qualunque (brv flavio)
-- [ ] aggiungere define
-- [ ] square error sono due variabili (errore)
+- [x] aggiungere define
+- [x] square error sono due variabili (errore)
 - [ ] struct dentro (e anche inline )
-- [ ] enum solo dichiarazione
-- [ ] lettere da controllare nei nomi delle variabili in più (&, etc)
+- [/] enum solo dichiarazione
+- [x] lettere da controllare nei nomi delle variabili in più (&, etc)

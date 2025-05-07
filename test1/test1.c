@@ -12,6 +12,11 @@
 
 int global_counter;
 const int 4backup=25;
+enum Level {
+	1LOW,
+	MEDIUM,
+	HIGH
+}; 
 
 int main(int argc, char *args[])
 {
