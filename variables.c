@@ -94,7 +94,7 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
             }
         }
         variables_checked++;
-        printf("variable is: %s\n", var_name);
+        //printf("variable is: %s\n", var_name);
         var_name = strtok(NULL, ",");
     }
     
@@ -181,31 +181,25 @@ void handle_error(array *errors, char *file_name, int line_num) {
     
 }
 
-// troppo forti
 char* strip(char* line) {
-    char *temp = (char *)calloc(strlen(line),sizeof(char));
-    temp = strcpy(temp, line);
-    int spaces=0;
-    bool found_delimiter = false;
+    int n = strlen(line);
+    char *new = (char *)calloc(n+1,sizeof(char));
 
-    array appending;
-    init_array(&appending);
+    int j = 0;
+    for(int i=0; i<n;i++){
+        char prec = i == 0 ? ';' : line[i-1];
+        char succ = i == n-1 ? ' ' : line[i+1];
 
-    for (int i=0;i<strlen(temp);i++){
-        if (temp[i] == ',' || temp[i] == '=') found_delimiter = true;
-        else if(temp[i] == ' '){
-            spaces++;
-            if(found_delimiter) append(&appending, i);
-        } else found_delimiter = false;
-    }
-    char* new_line = (char *)calloc(strlen(temp)-spaces, sizeof(char));
-    
-    int j = 0; // index for the new line
-    for(int i=0; i<strlen(temp); i++){
-        if (temp[i] != ' ') {
-            new_line[j++] = temp[i];
+        if(!(line[i] == ' ' && is_removable(prec, succ))) {
+            new[j++] = line[i];
         }
     }
-    for (int i=strlen(new_line); i-- )
-    return new_line;
+    new[j] = '\0';
+    printf("new is: %s\n", new);
+    return new;
+}
+
+bool is_removable(char pre, char post) {
+    return (pre == '=' || pre == ';' || pre == ' ' || pre == ',' ||
+    post == '=' || post == ';' || post == ' ' || post == ',' );    
 }
