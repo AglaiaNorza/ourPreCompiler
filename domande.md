@@ -1,9 +1,14 @@
 - [ ] parole private ? 
-- [ ] square error ?
+- [ ] square error ? (da considerare come una)
 - [ ] #define
 - [ ] piú errori nella riga ? 
 
 
 
 things to fix
-- [ ] passare un path qualunque
+- [x] passare un path qualunque (brv flavio)
+- [ ] aggiungere define
+- [ ] square error sono due variabili (errore)
+- [ ] struct dentro (e anche inline )
+- [ ] enum solo dichiarazione
+- [ ] lettere da controllare nei nomi delle variabili in più (&, etc)

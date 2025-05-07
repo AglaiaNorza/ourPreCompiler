@@ -10,14 +10,14 @@
 
 /*le variabili global sono pericolose*/
 
-int global_counter=0;
+int global_counter;
 const int 4backup=25;
 
 int main(int argc, char *args[])
 {
 	/*variabili locali*/
 	float average=0; //media
-	double square_error; //errore quadratico medio
+	double square error; //errore quadratico medio
 	char switch; //per parsing input
 	int i;
 	/* 

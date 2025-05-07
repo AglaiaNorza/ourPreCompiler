@@ -20,6 +20,18 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
     int offset;
     bool vars = true;
 
+    if(strchr(line, ';') == NULL) {
+        if (strstr(line, "#define") != NULL)
+            variables_checked++;
+    
+        if(strstr(line, "enum") != NULL) {
+        }
+
+        if(strstr(line, "struct") != NULL){
+
+        }
+    }
+
     while((semicolon = strchr(line, ';')) != NULL) {
         char *temp;
         offset = semicolon-line+1;
@@ -32,19 +44,77 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
     return vars;
 }
 
-
 bool check_variables(char* line, array *errors, int line_num, char *file_name) {
-    char delimiters[] = " ,;";
+    char *temp = (char *)calloc(strlen(line), sizeof(char));
+    temp=strcpy(temp, line);
+    char *token = strtok(temp, " ");
+    int skip_len=0;
+    bool type=false, def = false;
+    if(token == NULL) return true; // da capire
+    while (strchr(token, '\t') != NULL){ // removing trailing tabs
+        token++;
+    }
+
+    do {// iterate to the first token that is not a type
+        bool foundtype = false;
+        for (int i=0; i<sizeof(valid_types)/sizeof(valid_types[0]); i++) {
+            if(!strcmp(valid_types[i], token)) foundtype = true;
+            if(!strcmp(valid_types[i], "typedef")) def = true;
+        }
+        for (int i=0; i<custom_types.size; i++) {
+            if(!strcmp(custom_types.items[i], token)) foundtype = true;
+        }
+        if (foundtype) {
+            token = strtok(NULL, " ");
+            skip_len += strlen(token);
+            type = true;
+        } else type = false;
+
+    } while(type && token != NULL);
+
+    line = strstr(line, token); // copy rest of line (no types) to line
+    free(temp);
+    
+    char* newline = strip(line); // strip line of spaces
+    if(def) {
+        token[strlen(token)-1] = '\0';
+        append(&custom_types, token);
+    }
+    char* var_name = strtok(newline, ",");
+
+    while (var_name != NULL) {
+        if (var_name[0] >= '0' && var_name[0] <= '9')  {
+            handle_error(errors, file_name, line_num);
+        }
+        for (int j = 0; j < strlen(var_name); j++) {
+            if (var_name[j]=='=') break; // next variable name
+            if (var_name[j] == '-' || var_name[j] == '&') {
+                handle_error(errors, file_name, line_num);
+                break;
+            }
+        }
+        variables_checked++;
+        printf("variable is: %s\n", var_name);
+        var_name = strtok(NULL, ",");
+    }
+    
+    return true;
+
+    //chiama get_token e controlla se sono variabili e se c'è una virgola va avanti
+}
+
+/*bool check_variables_trash(char* line, array *errors, int line_num, char *file_name) {
+    char delimiters[] = " ";
     bool type_checked = false;
     bool def = false;
     bool found_var = false;
 
     char *token = strtok(line, delimiters);
-    int i = 0;
-
+    int i = 0;    
     while (strchr(token, '\t') != NULL){ // removing trailing tabs
         token++;
-    } 
+    }
+
     while (token != NULL) {
         if (!strcmp(token, "=")) return found_var; // fine
         if (!strcmp(token, "typedef")) def = true; // defining a new type
@@ -58,6 +128,7 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
             }
            
             type_checked = false;
+
             if (token[0] >= '0' && token[0] <= '9')  {
                 handle_error(errors, file_name, line_num);
             }
@@ -73,6 +144,9 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
             if(!strcmp(valid_types[i], token)) {
                 type_checked = true; //abbiamo trovato un tipo
                 found_var = true;
+                if(!strcmp(valid_types[i], "#define")){
+                    printf("abbiamo trovato un define !");
+                }
                 break;
             }
         }
@@ -96,7 +170,7 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
         token = strtok(NULL, delimiters);
     }
     return found_var;
-}
+}*/
 
 void handle_error(array *errors, char *file_name, int line_num) {
     n_errors++;
@@ -105,4 +179,33 @@ void handle_error(array *errors, char *file_name, int line_num) {
     snprintf(temp, size, "error #%d: %s:%d\n", n_errors, file_name, line_num);
     append(errors, temp);
     
+}
+
+// troppo forti
+char* strip(char* line) {
+    char *temp = (char *)calloc(strlen(line),sizeof(char));
+    temp = strcpy(temp, line);
+    int spaces=0;
+    bool found_delimiter = false;
+
+    array appending;
+    init_array(&appending);
+
+    for (int i=0;i<strlen(temp);i++){
+        if (temp[i] == ',' || temp[i] == '=') found_delimiter = true;
+        else if(temp[i] == ' '){
+            spaces++;
+            if(found_delimiter) append(&appending, i);
+        } else found_delimiter = false;
+    }
+    char* new_line = (char *)calloc(strlen(temp)-spaces, sizeof(char));
+    
+    int j = 0; // index for the new line
+    for(int i=0; i<strlen(temp); i++){
+        if (temp[i] != ' ') {
+            new_line[j++] = temp[i];
+        }
+    }
+    for (int i=strlen(new_line); i-- )
+    return new_line;
 }

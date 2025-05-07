@@ -8,3 +8,4 @@
 bool check_variables(char* line, array *errors, int line_num, char *file_name);
 bool preprocess_variables(char* line, array *errors, int line_num, char *file_name);
 void handle_error(array *errors, char *file_name, int line_num);
+char* strip(char *line);

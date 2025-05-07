@@ -8,3 +8,5 @@ const char *no; //TODO
 int 5sah;
 int boh-np;
 int u&i&&;
+
+int ciao = 5, no = 6;
