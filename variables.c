@@ -6,9 +6,10 @@ extern int comment_lines_del;
 extern int files_included;
 extern int n_lines;
 
-char *valid_types[] = { "char", "short", "int", "long", "float", "double", "_Bool", "bool", "unsigned", "signed", "size_t", "intptr_t", "const", "typedef", "enum" };
+char *valid_types[] = { "char", "short", "int", "long", "float", "double", "_Bool", "bool", "unsigned", "signed", "size_t", "intptr_t", "const", "typedef", "enum", "struct" };
 array custom_types;
 bool in_enum = false;
+bool in_struct = false;
 
 const char* keywords[] = {
     "if", "else", "switch", "case", "default",
@@ -21,41 +22,43 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
     int offset;
     bool vars = true;
 
-    if (in_enum && strchr(line, '{') != NULL) {
-        return vars;
-    } else if (in_enum && strchr(line, ';') != NULL) {
+    if (in_enum && strchr(line, ';') != NULL) {
         in_enum = false;
         return vars;
     } else if (in_enum) {
-        char *nl = strip(line);
-        variables_checked++;
-        printf("enum is: %s\n", nl);
-        check_error(nl, errors, file_name, line_num);
-        //TODO
-        /*char *tk = strtok(nl, ",");
+        return vars;
+    }
 
-        while (tk != NULL) {
-            printf("current enum: %s\n", tk);
-            check_error(tk, errors, file_name, line_num);
-            variables_checked++;
-            tk = strtok(NULL, ",");
-
-        }*/
+    if (in_struct && strchr(line, '}') != NULL) {
+        in_struct = false;
+        return vars;
     }
 
     if(strchr(line, ';') == NULL) {
         if (strstr(line, "#define") != NULL)
             variables_checked++;
+    }
     
-        if(strstr(line, "enum") != NULL) {
-            in_enum = true;
-            printf("ENUM\n");
-        }
+    char* enum_ind;
+    if((enum_ind = strstr(line, "enum"))!=NULL && line-enum_ind == 0) {
+        in_enum = true;
+        vars = vars && check_variables(line, errors, line_num, file_name);
+        if (strchr(line, ';') != NULL) in_enum=false;
+        return vars;
+    }
 
-        if(strstr(line, "struct") != NULL){
-
+    char* struct_ind;
+    if((struct_ind = strstr(line, "struct"))!=NULL && line-struct_ind == 0) {
+        in_struct = true;
+        vars = vars && check_variables(line, errors, line_num, file_name);
+        if (strchr(line, ';') != NULL) {
+            return vars;
+        } else if (strchr(line, '}') != NULL) {
+            in_enum=false;
+            return vars;
         }
     }
+    
 
     while((semicolon = strchr(line, ';')) != NULL) {
         char *temp;
@@ -74,7 +77,7 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
     temp=strcpy(temp, line);
     char *token = strtok(temp, " ");
     int skip_len=0;
-    bool type=false, def = false;
+    bool type = false, def = false;
     if(token == NULL) return true; // da capire
     while (strchr(token, '\t') != NULL){ // removing trailing tabs
         token++;
@@ -86,16 +89,16 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
         for (int i=0; i<sizeof(valid_types)/sizeof(valid_types[0]); i++) {
             if(!strcmp(valid_types[i], token)) {
                 foundtype = true;
-                found_var=true;
+                found_var = true;
+                if(!strcmp(valid_types[i], "typedef") || !strcmp(valid_types[i], "enum") 
+                || (!strcmp(valid_types[i], "struct"))){
+                    def = true;
+                }
             }
-            if(!strcmp(valid_types[i], "typedef")) def = true;
-            //TODO
-            //if(!strcmp(valid_types[i], "typedef") || !strcmp(valid_types[i], "enum")) def = true;
         }
         for (int i=0; i<custom_types.size; i++) {
             if(!strcmp(custom_types.items[i], token)) {
-                foundtype = true;
-                found_var = true;
+                foundtype = true, found_var = true;
             }
         }
         if (foundtype) {
@@ -105,38 +108,41 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
         } else type = false;
     } while (type && token != NULL);
 
+    char *token_copy = strdup(token);
     line = strstr(line, token); // copy rest of line (no types) to line
     free(temp);
     
     char* newline = strip(line); // strip line of spaces
-    //printf("new new: %s\n", newline);
     if(def) {
-        token[strlen(token)-1] = '\0';
-        //TODO
-        //char *ct = strip(token);
-        //printf("custom type: %s\n", ct);
-        append(&custom_types, token);
+        token_copy[strcspn(token_copy, ";{")]='\0';
+        //token_copy[strcspn(token_copy, "{")]='\0';
+        printf("token (in def): '%s'\n", token_copy);
+        append(&custom_types, token_copy);
+        def = false;
+        check_error(token_copy,errors,file_name,line_num);
+        return found_var;
     }
     char *var_name;
-    if (strchr(newline, ',') != NULL && found_var) {
+    if (strchr(newline, ',')!=NULL && found_var) {
         var_name = strtok(newline, ",");
 
         while (var_name != NULL) {
             check_error(var_name,errors,file_name,line_num);
             variables_checked++;
-            printf("tok is: %s\n", var_name);
+            printf("adding: %s\n", var_name);
             var_name = strtok(NULL, ",");
         }
     }
     else if (found_var) {
+        printf("newline is: %s\n", newline);
+        //enum dovrebbe entrare qui
         check_error(newline,errors,file_name,line_num);
         variables_checked++;
+        printf("adding: %s\n", var_name);
 
         printf("variable is: %s\n", newline);
     }
-
     return found_var;
-
     //chiama get_token e controlla se sono variabili e se c'è una virgola va avanti
 }
 
@@ -218,6 +224,7 @@ void handle_error(array *errors, char *file_name, int line_num) {
 	free(temp);
 }
 
+// check if a variable name is legal
 void check_error(char *var_name, array *errors, char *file_name, int line_num) {
     if (var_name[0] >= '0' && var_name[0] <= '9') {
         handle_error(errors, file_name, line_num);
