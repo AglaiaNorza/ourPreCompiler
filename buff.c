@@ -12,6 +12,10 @@ typedef float myFloat-t;
 int global_counter;
 const int 4backup=25;
 enum Level{LOW,MEDIUM,HIGH}; 
+struct le { int mie;
+	char giganteschepalle;
+};
+char idk;
 
 int main(int argc, char *args[])
 {

@@ -18,8 +18,6 @@ bool handle_comments(char *line, FILE *buffer, bool *in_comment, bool *multiline
 			if (line[0]=='/') return true; // il commento inizia a  carattere 0, possiamo skippare
 			
 			int index = (int)(comment - line);
-			//strncpy(line, line, index-1);
-			//printf("sketchy cp done");
 			line[index-1] = '\n';
 			line[index] = '\0'; // tagliamo la stringa
 			*in_comment = false; // go to next line

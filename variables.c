@@ -6,7 +6,7 @@ extern int comment_lines_del;
 extern int files_included;
 extern int n_lines;
 
-char *valid_types[] = { "char", "short", "int", "long", "float", "double", "_Bool", "bool", "unsigned", "signed", "size_t", "intptr_t", "const", "typedef", "enum", "struct" };
+char *valid_types[] = { "char", "char*", "short", "int", "long", "float", "double", "_Bool", "bool", "unsigned", "signed", "size_t", "intptr_t", "const", "typedef", "enum", "struct" };
 array custom_types;
 bool in_enum = false;
 bool in_struct = false;
@@ -52,14 +52,15 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
         in_struct = true;
         vars = vars && check_variables(line, errors, line_num, file_name);
         if (strchr(line, ';') != NULL) {
-            return vars;
+            line = strchr(line, '{')+1;
         } else if (strchr(line, '}') != NULL) {
             in_enum=false;
+            return vars;
+        } else {
             return vars;
         }
     }
     
-
     while((semicolon = strchr(line, ';')) != NULL) {
         char *temp;
         offset = semicolon-line+1;
@@ -116,7 +117,6 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
     if(def) {
         token_copy[strcspn(token_copy, ";{")]='\0';
         //token_copy[strcspn(token_copy, "{")]='\0';
-        printf("token (in def): '%s'\n", token_copy);
         append(&custom_types, token_copy);
         def = false;
         check_error(token_copy,errors,file_name,line_num);
@@ -129,91 +129,17 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
         while (var_name != NULL) {
             check_error(var_name,errors,file_name,line_num);
             variables_checked++;
-            printf("adding: %s\n", var_name);
             var_name = strtok(NULL, ",");
         }
     }
     else if (found_var) {
-        printf("newline is: %s\n", newline);
         //enum dovrebbe entrare qui
         check_error(newline,errors,file_name,line_num);
         variables_checked++;
-        printf("adding: %s\n", var_name);
-
-        printf("variable is: %s\n", newline);
     }
     return found_var;
     //chiama get_token e controlla se sono variabili e se c'è una virgola va avanti
 }
-
-/*bool check_variables_trash(char* line, array *errors, int line_num, char *file_name) {
-    char delimiters[] = " ";
-    bool type_checked = false;
-    bool def = false;
-    bool found_var = false;
-
-    char *token = strtok(line, delimiters);
-    int i = 0;    
-    while (strchr(token, '\t') != NULL){ // removing trailing tabs
-        token++;
-    }
-
-    while (token != NULL) {
-        if (!strcmp(token, "=")) return found_var; // fine
-        if (!strcmp(token, "typedef")) def = true; // defining a new type
-        if (type_checked) { // controlliamo nome di una variabile
-        
-            for (int i=0; i<sizeof(keywords)/sizeof(keywords[0]); i++) {
-                if(!strcmp(keywords[i], token)) {
-                   handle_error(errors, file_name, line_num);
-                   break;
-                }
-            }
-           
-            type_checked = false;
-
-            if (token[0] >= '0' && token[0] <= '9')  {
-                handle_error(errors, file_name, line_num);
-            }
-            for (int j = 0; j < strlen(token); j++) {
-                if (token[j] == '-' || token[j] == '&') {
-                    handle_error(errors, file_name, line_num);
-                    break;
-                }
-            }
-        }
-
-        for (int i=0; i<sizeof(valid_types)/sizeof(valid_types[0]); i++) {
-            if(!strcmp(valid_types[i], token)) {
-                type_checked = true; //abbiamo trovato un tipo
-                found_var = true;
-                if(!strcmp(valid_types[i], "#define")){
-                    printf("abbiamo trovato un define !");
-                }
-                break;
-            }
-        }
-        for (int i=0; i<custom_types.size; i++) {
-            if (!strcmp(custom_types.items[i], token)) {
-                type_checked = true; //abbiamo trovato un tipo (custom)
-                found_var = true;
-                break;
-            }
-        }
-        
-        if(!type_checked && found_var){
-            if(!def) { // abbiamo appena controllato il nome di una variabile
-                variables_checked++;
-            }
-            if(def) { //abbiamo appena controllato un tipo
-                append(&custom_types, token);
-                def = false;
-            }
-        }
-        token = strtok(NULL, delimiters);
-    }
-    return found_var;
-}*/
 
 void handle_error(array *errors, char *file_name, int line_num) {
     n_errors++;
@@ -232,14 +158,15 @@ void check_error(char *var_name, array *errors, char *file_name, int line_num) {
     for (int j = 0; j < strlen(var_name); j++) {
         if (var_name[j] == '=')
             break; // next variable name
-        if (var_name[j] == '-' || var_name[j] == '&' || var_name[j] == '$' || var_name[j] == ' ' ||
-            var_name[j] == '#' || var_name[j] == '%' || var_name[j] == '*') {
-            handle_error(errors, file_name, line_num);
-            break;
-        }
+    }
+    if (strcspn(var_name, " !@#$%^()[]{}+-/\\|:?><~") != strlen(var_name) ||
+     (strcspn(var_name, "&*") != 0) && strcspn(var_name, "&*")!= strlen(var_name)) {
+        handle_error(errors, file_name, line_num);
     }
     for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) {
         if (!strcmp(keywords[i], var_name)) {
+            // TODO: fix (non detecta switch)
+            printf("etetete %s\n", keywords[i]);
             handle_error(errors, file_name, line_num);
             break;
         }
@@ -260,7 +187,6 @@ char* strip(char* line) {
         }
     }
     new[j] = '\0';
-    //printf("new is: %s\n", new);
     return new;
 }
 

@@ -76,11 +76,11 @@ int main(int argc, char *argv[]) {
 		fclose(buffer);
 		if (!output) {
 			if (remove("buffer.temp") != 0) {
-				printf("Error: Unable to delete the file.\n");
+				fprintf(stderr, "Error: Unable to delete the file.\n");
 			}
 		} else {
 			if (remove(output) != 0) {
-				printf("Error: Unable to delete the file.\n");
+				fprintf(stderr, "Error: Unable to delete the file.\n");
 			}
 		}
 		exit(1);
@@ -88,13 +88,13 @@ int main(int argc, char *argv[]) {
 		
 	if (verbose) {
 		for (int i=0; i<errors.size; i++){
-			printf("%s", errors.items[i]);
+			fprintf(stderr, "%s", errors.items[i]);
 		}
 		for (int i=0; i<stats.size; i++){
-			printf("%s", stats.items[i]);
+			fprintf(stderr, "%s", stats.items[i]);
 		}
 		int buffer_size = ftell(buffer);
-		printf("variables checked: %d\n"
+		fprintf(stderr, "variables checked: %d\n"
 			"number of errors: %d\n"
 			"number of comment lines deleted: %d\n"
 			"number of includes: %d\n"
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
 		}
 		fclose(buffer);
 		if (remove("buffer.temp") != 0) {
-			printf("Error: Unable to delete the file.\n");
+			fprintf(stderr, "Error: Unable to delete the file.\n");
 		}
 	}
 }
@@ -129,7 +129,7 @@ bool read_file(char *input, FILE *buffer) {
 	file_in = fopen(input, "r");
 	// file input non valido
 	if (file_in == NULL) {
-		printf("errore in apertura sul file %s\n",input);
+		fprintf(stderr, "Errore in apertura sul file %s\n",input);
 		return false;
 	}
 
@@ -191,7 +191,7 @@ bool read_file(char *input, FILE *buffer) {
 	fseek(file_in, 0, SEEK_END); // seek to end of file (to be safe)
 	int file_size = ftell(file_in);
 
-	int size = snprintf(0, 0, "file name: %s, file size: %d bytes, number of lines: %d\n", input, file_size, line_number)+1;
+	int size = snprintf( 0, 0, "file name: %s, file size: %d bytes, number of lines: %d\n", input, file_size, line_number)+1;
     char *temp = (char *)calloc(size, sizeof(char));
     snprintf(temp, size, "file name: %s, file size: %d bytes, number of lines: %d\n", input, file_size, line_number);
     append(&stats, temp);
