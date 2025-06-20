@@ -17,6 +17,7 @@ const char* keywords[] = {
     "struct", "union", "enum", "typedef", "sizeof", "void", "inline"
 };
 
+// takes lines, splits them on ; and sends them to check_variables()
 bool preprocess_variables(char* line, array *errors, int line_num, char *file_name){
     char *semicolon;
     int offset;
@@ -152,6 +153,9 @@ void handle_error(array *errors, char *file_name, int line_num) {
 
 // check if a variable name is legal
 void check_error(char *var_name, array *errors, char *file_name, int line_num) {
+    if (strchr(var_name, ';')!=NULL) {
+        var_name[strlen(var_name)-1]='\0';
+    }
     if (var_name[0] >= '0' && var_name[0] <= '9') {
         handle_error(errors, file_name, line_num);
     }
@@ -165,8 +169,6 @@ void check_error(char *var_name, array *errors, char *file_name, int line_num) {
     }
     for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) {
         if (!strcmp(keywords[i], var_name)) {
-            // TODO: fix (non detecta switch)
-            printf("etetete %s\n", keywords[i]);
             handle_error(errors, file_name, line_num);
             break;
         }

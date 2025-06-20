@@ -7,6 +7,7 @@
 //#include "hello_world_1.c"
 
 #include "test1.h"
+#include "how.txt"
 
 /*le variabili global sono pericolose*/
 
