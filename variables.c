@@ -17,61 +17,71 @@ const char* keywords[] = {
     "struct", "union", "enum", "typedef", "sizeof", "void", "inline"
 };
 
-// takes lines, splits them on ; and sends them to check_variables()
+// takes line, splits it on ';' and sends instructions to check_variables()
 bool preprocess_variables(char* line, array *errors, int line_num, char *file_name){
     char *semicolon;
     int offset;
     bool vars = true;
 
+    if (strchr(line, ';') != NULL) {
+        bool in = in_enum || in_struct;
+        if (in_enum) in_enum = false;
+        else if (in_struct) in_struct = false;
+        else if (strstr(line, "#define") != NULL) variables_checked++;
+        if (in) return vars;
+    } else if (in_enum) return vars;
+
+    /*//handles if current line is enum closing
     if (in_enum && strchr(line, ';') != NULL) {
         in_enum = false;
         return vars;
-    } else if (in_enum) {
-        return vars;
-    }
+    } else if (in_enum) return vars;
 
-    if (in_struct && strchr(line, '}') != NULL) {
+    //handles if current line is struct closing
+    if (in_struct && strchr(line, ';') != NULL) {
         in_struct = false;
         return vars;
     }
 
+    //handles define's
     if(strchr(line, ';') == NULL) {
-        if (strstr(line, "#define") != NULL)
+        if (strstr(line, "#define") != NULL) //huh
             variables_checked++;
     }
+    */
     
-    char* enum_ind;
-    if((enum_ind = strstr(line, "enum"))!=NULL && line-enum_ind == 0) {
+    //handles enums
+    char* enum_idx;
+    if((enum_idx = strstr(line, "enum"))!=NULL && line-enum_idx == 0) { //if enum starts @ index 0 
         in_enum = true;
         vars = vars && check_variables(line, errors, line_num, file_name);
-        if (strchr(line, ';') != NULL) in_enum=false;
+        if (strchr(line, ';') != NULL) in_enum=false; //enum in one line !
         return vars;
     }
 
-    char* struct_ind;
-    if((struct_ind = strstr(line, "struct"))!=NULL && line-struct_ind == 0) {
+    //handles structs
+    char* struct_idx;
+    if((struct_idx = strstr(line, "struct"))!=NULL && line-struct_idx == 0) { //if struct starts @ index 0
         in_struct = true;
         vars = vars && check_variables(line, errors, line_num, file_name);
-        if (strchr(line, ';') != NULL) {
+        if (strchr(line, ';') != NULL) { // check for declarations inline
             line = strchr(line, '{')+1;
-        } else if (strchr(line, '}') != NULL) {
-            in_enum=false;
+        } else if (strchr(line, '}') != NULL) { // struct in one line
+            in_struct=false; //prima era in_enum = false
             return vars;
-        } else {
-            return vars;
-        }
+        } else return vars;
     }
     
+    // check for multiple regular instructions in one line
     while((semicolon = strchr(line, ';')) != NULL) {
         char *temp;
         offset = semicolon-line+1;
         temp = (char *)calloc(offset, sizeof(char));
-        strncpy(temp, line, offset); // first part of a string
+        strncpy(temp, line, offset); // copying instruction
         vars = vars && check_variables(temp, errors, line_num, file_name);
         line += offset;
         free(temp);
     }
-    return vars;
 }
 
 bool check_variables(char* line, array *errors, int line_num, char *file_name) {
@@ -80,8 +90,8 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
     char *token = strtok(temp, " ");
     int skip_len=0;
     bool type = false, def = false;
-    if(token == NULL) return true; // da capire
-    while (strchr(token, '\t') != NULL){ // removing trailing tabs
+    if(token == NULL) return true; // no tokens are found
+    while (strchr(token, '\t') != NULL){ // removing left tabs
         token++;
     }
 

@@ -2,7 +2,6 @@ typedef struct {
     char **items;
     size_t size;
 } array;
-array custom_types;
 
 void init_array(array *arr);
 void append(array *arr, const char *value);

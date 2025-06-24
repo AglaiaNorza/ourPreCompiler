@@ -64,23 +64,23 @@ int main(int argc, char *argv[]) {
 		}
 		else { return 0; }
 	}
-	FILE *buffer;
-	buffer = output ? fopen(output, "w") : fopen("buffer.temp", "w+");
 
-	// array dinamici :D
 	init_array(&errors);
 	init_array(&stats);
 	init_array(&custom_types);
+
+	FILE *buffer;
+	buffer = output ? fopen(output, "w") : fopen("buffer.temp", "w+");
 
 	if (!read_file(input, buffer)) {
 		fclose(buffer);
 		if (!output) {
 			if (remove("buffer.temp") != 0) {
-				fprintf(stderr, "Error: Unable to delete the file.\n");
+				fprintf(stderr, "Error: Unable to delete the temporary file.\n");
 			}
 		} else {
 			if (remove(output) != 0) {
-				fprintf(stderr, "Error: Unable to delete the file.\n");
+				fprintf(stderr, "Error: Unable to delete the temporary file.\n");
 			}
 		}
 		exit(1);
@@ -106,6 +106,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (!output) {
+        // if no output file is given, result is printed to stdout
 		fseek(buffer, 0, SEEK_SET);
 		char ch;
 		putchar('\n');
@@ -114,7 +115,7 @@ int main(int argc, char *argv[]) {
 		}
 		fclose(buffer);
 		if (remove("buffer.temp") != 0) {
-			fprintf(stderr, "Error: Unable to delete the file.\n");
+			fprintf(stderr, "Error: Unable to delete the temporary file.\n");
 		}
 	}
 }
@@ -134,6 +135,7 @@ bool read_file(char *input, FILE *buffer) {
 	}
 
 	char *line = NULL;
+
 	// dimensione di line (se è 0, la ignora e alloca da solo il buffer)
 	size_t len = 0;
 
@@ -144,24 +146,21 @@ bool read_file(char *input, FILE *buffer) {
 	while ((line_len = getline(&line, &len, file_in)) != -1) {
 		total_lines++;
 		line_number++;
-		// char *comment;
-
+        //
 		// recursively append all includes in the file
 		if (line[0] == '#' && strstr(line, "include")!= NULL) {
 			files_included++;
-			
 			char *lib_name;
 			char *last = NULL;
 			int lib_len = line_len - 11;
-			// trova ultima occorrenza di / (trovare input con cartelle)
+            //
+			// skips to last occurence of '/' in the input path given (because all includes must be in the same dir of the input file)
 			if ((last = strrchr(input, '/'))) {
-				lib_len += (last-input+1);
+				lib_len += (last-input+1); //difference of addresses gives position of '/'
 			}
 			if (line[line_len - 1] == '\n') lib_len--;
 			lib_name = (char *)calloc(lib_len, sizeof(char));
 
-      // char *strncpy(char *str, const char *str2, size_t count)
-      // why this & ?
 			// modifica lib_name in modo tale da includere il percorso relativo se presente
 			if (last) {
 				strncpy(lib_name, input, last-input+1);
@@ -173,19 +172,20 @@ bool read_file(char *input, FILE *buffer) {
 			continue;
 		}
 
-		// if the line doesn't need to be checked (for variable syntax, etc)
+		// check if the line doesn't need to be checked for variable syntax, etc
+        // skip = true: can skip
 		int skip = handle_comments(line, buffer, &in_comment, &multiline_comm);
 		
 		if(!skip){
 			if (lines_to_skip!=-1 && strstr(line, "int main(")) {
-				if (strstr(line, "{")) lines_to_skip = 1; // main declaration is in one line
-				else lines_to_skip = 2; 
+				if (strstr(line, "{")) lines_to_skip = 1; // main declaration is in one line, we skip it
+				else lines_to_skip = 2; // opening curly braket is on another line, we need to skip that one too
 			}
 			if (lines_to_skip == 0){
-				if (!preprocess_variables(line, &errors, line_number, input)) lines_to_skip = -1;
+				if (!preprocess_variables(line, &errors, line_number, input)) lines_to_skip = -1; // no more variable declarations
 			} else lines_to_skip--;
 			fputs(line, buffer);
-		} else { comment_lines_del++; }
+		} else {comment_lines_del++;} //because current line was skipped
 	}
 
 	fseek(file_in, 0, SEEK_END); // seek to end of file (to be safe)
@@ -195,8 +195,6 @@ bool read_file(char *input, FILE *buffer) {
     char *temp = (char *)calloc(size, sizeof(char));
     snprintf(temp, size, "file name: %s, file size: %d bytes, number of lines: %d\n", input, file_size, line_number);
     append(&stats, temp);
-
-	//fprintf(errors, "file name: %s, file size: %d bytes, number of lines: %d\n", input, file_size, line_number);
 	free(line);
 	return true;
 }
