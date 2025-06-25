@@ -1,12 +1,13 @@
 #include "comments.h"
 
-bool handle_comments(char *line, FILE *buffer, bool *in_comment, bool *multiline_comm) {
+// takes as input: a line, 
+bool handle_comments(char *line, bool *in_comment, bool *multiline_comm) {
 	char *comment;
-
+    
 	// if line was modified
 	bool skip = false;
 
-    // if we find the end of a multiline comment, multiline_comment() handles it
+    // multiline comment was closed
 	if(*in_comment && (comment = strchr(line, '*')) != NULL && comment[1]=='/') {
 		*in_comment = multiline_comment(line, multiline_comm);
 	} else if(*in_comment) return true; // comment continues for the rest of the line
@@ -23,6 +24,7 @@ bool handle_comments(char *line, FILE *buffer, bool *in_comment, bool *multiline
 			*in_comment = multiline_comment(line, multiline_comm);
 		}
 	}
+    free(comment);
 	return *in_comment;
 }
 

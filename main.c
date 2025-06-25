@@ -8,7 +8,7 @@ extern int n_errors;
 extern int comment_lines_del;
 extern int files_included;
 extern int n_lines;
-extern array custom_types;
+extern array custom_types; //included from 'variables.c'
 
 array stats;
 array errors;
@@ -16,7 +16,6 @@ int lines_to_skip = 0;
 int total_lines = 0;
 
 int main(int argc, char *argv[]) {
-	// eseguito senza parametri
 	variables_checked = 0;
 	n_errors = 0;
 	comment_lines_del = 0;
@@ -60,7 +59,6 @@ int main(int argc, char *argv[]) {
 		} else if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--verbose")) {
 			i++;
 			verbose = true;
-			//printf("verboso ! \n");
 		}
 		else { return 0; }
 	}
@@ -70,7 +68,7 @@ int main(int argc, char *argv[]) {
 	init_array(&custom_types);
 
 	FILE *buffer;
-	buffer = output ? fopen(output, "w") : fopen("buffer.temp", "w+");
+	buffer = output ? fopen(output, "w") : fopen("buffer.temp", "w+"); //tristate su
 
 	if (!read_file(input, buffer)) {
 		fclose(buffer);
@@ -118,6 +116,11 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr, "Error: Unable to delete the temporary file.\n");
 		}
 	}
+    free_array(&stats);
+    free_array(&errors);
+    free_array(&custom_types);
+    free(input);
+    free(output);
 }
 
 bool read_file(char *input, FILE *buffer) {
@@ -128,27 +131,24 @@ bool read_file(char *input, FILE *buffer) {
 	fseek(buffer, 0, SEEK_END);
 	FILE *file_in;
 	file_in = fopen(input, "r");
-	// file input non valido
+	// file input not valid
 	if (file_in == NULL) {
-		fprintf(stderr, "Errore in apertura sul file %s\n",input);
+		fprintf(stderr, "Error: Unable to open the file %s\n",input);
 		return false;
 	}
 
 	char *line = NULL;
-
-	// dimensione di line (se è 0, la ignora e alloca da solo il buffer)
-	size_t len = 0;
+	size_t len = 0; // length of the current line)
 
 	// lunghezza della linea che leggiamo
 	ssize_t line_len;
-	int line_number = 0; // numero della riga (per statistiche)
+	int line_number = 0; // line number (for statistics)
 	
 	while ((line_len = getline(&line, &len, file_in)) != -1) {
 		total_lines++;
 		line_number++;
-        //
 		// recursively append all includes in the file
-		if (line[0] == '#' && strstr(line, "include")!= NULL) {
+		if (line[0] == '#' && strstr(line, "include") != NULL) {
 			files_included++;
 			char *lib_name;
 			char *last = NULL;
@@ -161,7 +161,7 @@ bool read_file(char *input, FILE *buffer) {
 			if (line[line_len - 1] == '\n') lib_len--;
 			lib_name = (char *)calloc(lib_len, sizeof(char));
 
-			// modifica lib_name in modo tale da includere il percorso relativo se presente
+            // modifies lib_name to include the relative path, if present
 			if (last) {
 				strncpy(lib_name, input, last-input+1);
 				strncat(lib_name, &line[10], lib_len-(int)(last-input+1));
@@ -170,11 +170,13 @@ bool read_file(char *input, FILE *buffer) {
 			}
 			read_file(lib_name, buffer);
 			continue;
+            free(lib_name);
+            free(last);
 		}
 
 		// check if the line doesn't need to be checked for variable syntax, etc
         // skip = true: can skip
-		int skip = handle_comments(line, buffer, &in_comment, &multiline_comm);
+		int skip = handle_comments(line, &in_comment, &multiline_comm);
 		
 		if(!skip){
 			if (lines_to_skip!=-1 && strstr(line, "int main(")) {
@@ -196,5 +198,6 @@ bool read_file(char *input, FILE *buffer) {
     snprintf(temp, size, "file name: %s, file size: %d bytes, number of lines: %d\n", input, file_size, line_number);
     append(&stats, temp);
 	free(line);
+    free(temp);
 	return true;
 }

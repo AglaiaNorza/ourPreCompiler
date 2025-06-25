@@ -18,41 +18,34 @@ const char* keywords[] = {
 };
 
 // takes line, splits it on ';' and sends instructions to check_variables()
+// returns if any variables were declared in the current line
 bool preprocess_variables(char* line, array *errors, int line_num, char *file_name){
     char *semicolon;
     int offset;
     bool vars = true;
+    
+    //handles define's
+    if(strchr(line, ';') == NULL) {
+        if (strstr(line, "#define") != NULL) //huh
+            variables_checked++;
+    }
 
-    if (strchr(line, ';') != NULL) {
-        bool in = in_enum || in_struct;
-        if (in_enum) in_enum = false;
-        else if (in_struct) in_struct = false;
-        else if (strstr(line, "#define") != NULL) variables_checked++;
-        if (in) return vars;
-    } else if (in_enum) return vars;
-
-    /*//handles if current line is enum closing
+    //handles if current line is enum closing
     if (in_enum && strchr(line, ';') != NULL) {
         in_enum = false;
         return vars;
     } else if (in_enum) return vars;
 
     //handles if current line is struct closing
+    // TODO: sbagliato ??? chiude la dichiarazione di uno struct dopo la dichiarazione del primo attributo (è presente `;`, e in_sruct == true)
     if (in_struct && strchr(line, ';') != NULL) {
         in_struct = false;
         return vars;
     }
 
-    //handles define's
-    if(strchr(line, ';') == NULL) {
-        if (strstr(line, "#define") != NULL) //huh
-            variables_checked++;
-    }
-    */
-    
     //handles enums
     char* enum_idx;
-    if((enum_idx = strstr(line, "enum"))!=NULL && line-enum_idx == 0) { //if enum starts @ index 0 
+    if((enum_idx = strstr(line, "enum"))!=NULL && line-enum_idx == 0) { //if enum starts @ index 0 (otherwise problems with words that contain `enum`)
         in_enum = true;
         vars = vars && check_variables(line, errors, line_num, file_name);
         if (strchr(line, ';') != NULL) in_enum=false; //enum in one line !
@@ -66,7 +59,7 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
         vars = vars && check_variables(line, errors, line_num, file_name);
         if (strchr(line, ';') != NULL) { // check for declarations inline
             line = strchr(line, '{')+1;
-        } else if (strchr(line, '}') != NULL) { // struct in one line
+        } else if (strchr(line, '}') != NULL) { // struct in one line (TODO: non proprio, `;` potrebbe essere alla riga successiva)
             in_struct=false; //prima era in_enum = false
             return vars;
         } else return vars;
@@ -82,26 +75,31 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
         line += offset;
         free(temp);
     }
+    free(semicolon);
+    free(struct_idx);
+    free(enum_idx);
 }
 
+// takes an istruction as an input, iterates to the vame of the variable (if present) and checks for its validity
+// returns if any variables were declared in the current instruction
 bool check_variables(char* line, array *errors, int line_num, char *file_name) {
     char *temp = (char *)calloc(strlen(line), sizeof(char));
     temp=strcpy(temp, line);
     char *token = strtok(temp, " ");
     int skip_len=0;
-    bool type = false, def = false;
+    bool def = false;
     if(token == NULL) return true; // no tokens are found
     while (strchr(token, '\t') != NULL){ // removing left tabs
         token++;
     }
 
-    bool found_var=false;
+    bool found_var=false; // current instruction has a variable declaration
+    bool type = false; // if the current token is a type (regular or special)
     do { // iterate to the first token that is not a type
         bool foundtype = false;
         for (int i=0; i<sizeof(valid_types)/sizeof(valid_types[0]); i++) {
             if(!strcmp(valid_types[i], token)) {
                 foundtype = true;
-                found_var = true;
                 if(!strcmp(valid_types[i], "typedef") || !strcmp(valid_types[i], "enum") 
                 || (!strcmp(valid_types[i], "struct"))){
                     def = true;
@@ -110,10 +108,11 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
         }
         for (int i=0; i<custom_types.size; i++) {
             if(!strcmp(custom_types.items[i], token)) {
-                foundtype = true, found_var = true;
+                foundtype = true;
             }
         }
         if (foundtype) {
+            found_var = true;
             token = strtok(NULL, " ");
             skip_len += strlen(token);
             type = true;
@@ -123,18 +122,22 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
     char *token_copy = strdup(token);
     line = strstr(line, token); // copy rest of line (no types) to line
     free(temp);
+    free(token);
     
-    char* newline = strip(line); // strip line of spaces
     if(def) {
+        // TODO: perchè anche `;` ?
         token_copy[strcspn(token_copy, ";{")]='\0';
-        //token_copy[strcspn(token_copy, "{")]='\0';
+
+        // add custom type to list
         append(&custom_types, token_copy);
         def = false;
         check_error(token_copy,errors,file_name,line_num);
         return found_var;
     }
     char *var_name;
-    if (strchr(newline, ',')!=NULL && found_var) {
+    char* newline = strip(line); // strip line of spaces
+
+    if (strchr(newline, ',')!=NULL && found_var) { // declaration of multiple variables in a single instruction
         var_name = strtok(newline, ",");
 
         while (var_name != NULL) {
@@ -142,16 +145,17 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
             variables_checked++;
             var_name = strtok(NULL, ",");
         }
-    }
-    else if (found_var) {
-        //enum dovrebbe entrare qui
+    }else if (found_var) {
         check_error(newline,errors,file_name,line_num);
         variables_checked++;
     }
     return found_var;
-    //chiama get_token e controlla se sono variabili e se c'è una virgola va avanti
+    free(token_copy);
+    free(var_name);
+    free(newline);
 }
 
+// logs error
 void handle_error(array *errors, char *file_name, int line_num) {
     n_errors++;
     int size = snprintf(0, 0, "error #%d: %s:%d\n", n_errors, file_name, line_num)+1;
@@ -161,7 +165,7 @@ void handle_error(array *errors, char *file_name, int line_num) {
 	free(temp);
 }
 
-// check if a variable name is legal
+// checks if a variable name is legal
 void check_error(char *var_name, array *errors, char *file_name, int line_num) {
     if (strchr(var_name, ';')!=NULL) {
         var_name[strlen(var_name)-1]='\0';
@@ -169,6 +173,8 @@ void check_error(char *var_name, array *errors, char *file_name, int line_num) {
     if (var_name[0] >= '0' && var_name[0] <= '9') {
         handle_error(errors, file_name, line_num);
     }
+
+    // if there is a `=` in the variable name, it is counted as the end of the variable name (everything that comes after `=` is considered part of the assignment to the variable)
     for (int j = 0; j < strlen(var_name); j++) {
         if (var_name[j] == '=')
             break; // next variable name
@@ -185,6 +191,7 @@ void check_error(char *var_name, array *errors, char *file_name, int line_num) {
     }
 }
 
+// strips a line of its spaces
 char* strip(char* line) {
     int n = strlen(line);
     char *new = (char *)calloc(n+1,sizeof(char));
@@ -194,12 +201,14 @@ char* strip(char* line) {
         char prec = i == 0 ? ';' : line[i-1];
         char succ = i == n-1 ? ' ' : line[i+1];
 
+        // TODO: aglaia spiega ....
         if(!((line[i] == ' ' && is_removable(prec, succ)) || line[i] == '\t' || line[i] == '\n')) {
             new[j++] = line[i];
         }
     }
     new[j] = '\0';
     return new;
+    // TODO: how do we free `new` ?
 }
 
 bool is_removable(char pre, char post) {
