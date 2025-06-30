@@ -13,7 +13,7 @@ int global_counter;
 const int 4backup=25;
 enum Level{LOW,MEDIUM,HIGH}; 
 struct le { int mie;
-	char giganteschepalle;
+	char 4giganteschepalle;
 };
 char idk;
 

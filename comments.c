@@ -24,7 +24,6 @@ bool handle_comments(char *line, bool *in_comment, bool *multiline_comm) {
 			*in_comment = multiline_comment(line, multiline_comm);
 		}
 	}
-    free(comment);
 	return *in_comment;
 }
 

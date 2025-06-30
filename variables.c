@@ -75,9 +75,10 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
         line += offset;
         free(temp);
     }
-    free(semicolon);
-    free(struct_idx);
-    free(enum_idx);
+    //free(semicolon);
+    //free(struct_idx);
+    //free(enum_idx);
+    return vars;
 }
 
 // takes an istruction as an input, iterates to the vame of the variable (if present) and checks for its validity
@@ -121,11 +122,11 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
 
     char *token_copy = strdup(token);
     line = strstr(line, token); // copy rest of line (no types) to line
-    free(temp);
-    free(token);
+    //free(temp);
+    //free(token);
     
     if(def) {
-        // TODO: perchè anche `;` ?
+		// we use ';' for typedef
         token_copy[strcspn(token_copy, ";{")]='\0';
 
         // add custom type to list
@@ -150,9 +151,9 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
         variables_checked++;
     }
     return found_var;
-    free(token_copy);
-    free(var_name);
-    free(newline);
+    //free(token_copy);
+    //free(var_name);
+    //free(newline);
 }
 
 // logs error
@@ -208,7 +209,6 @@ char* strip(char* line) {
     }
     new[j] = '\0';
     return new;
-    // TODO: how do we free `new` ?
 }
 
 bool is_removable(char pre, char post) {
