@@ -75,8 +75,8 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
         line += offset;
         free(temp);
     }
+    //TODO: secondo me da togliere
     //free(semicolon);
-    //free(struct_idx);
     //free(enum_idx);
     return vars;
 }
@@ -122,8 +122,7 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
 
     char *token_copy = strdup(token);
     line = strstr(line, token); // copy rest of line (no types) to line
-    //free(temp);
-    //free(token);
+    free(temp);
     
     if(def) {
 		// we use ';' for typedef
@@ -133,6 +132,7 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
         append(&custom_types, token_copy);
         def = false;
         check_error(token_copy,errors,file_name,line_num);
+        free(token_copy);
         return found_var;
     }
     char *var_name;
@@ -150,10 +150,8 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
         check_error(newline,errors,file_name,line_num);
         variables_checked++;
     }
+    free(newline);
     return found_var;
-    //free(token_copy);
-    //free(var_name);
-    //free(newline);
 }
 
 // logs error

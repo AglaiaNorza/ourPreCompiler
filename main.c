@@ -166,9 +166,8 @@ bool read_file(char *input, FILE *buffer) {
 				strncpy(lib_name, &line[10], lib_len);
 			}
 			read_file(lib_name, buffer);
-			continue;
             free(lib_name);
-            //free(last);
+			continue;
 		}
 
 		// check if the line doesn't need to be checked for variable syntax, etc
@@ -194,7 +193,7 @@ bool read_file(char *input, FILE *buffer) {
     char *temp = (char *)calloc(size, sizeof(char));
     snprintf(temp, size, "file name: %s, file size: %d bytes, number of lines: %d\n", input, file_size, line_number);
     append(&stats, temp);
-	//free(line);
+	free(line);
     free(temp);
 	return true;
 }
