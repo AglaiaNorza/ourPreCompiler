@@ -200,7 +200,7 @@ char* strip(char* line) {
         char prec = i == 0 ? ';' : line[i-1];
         char succ = i == n-1 ? ' ' : line[i+1];
 
-        // TODO: aglaia spiega ....
+        // if the current character is a space that needs to be removed or a \t or a \n, it gets skipped
         if(!((line[i] == ' ' && is_removable(prec, succ)) || line[i] == '\t' || line[i] == '\n')) {
             new[j++] = line[i];
         }
@@ -209,6 +209,8 @@ char* strip(char* line) {
     return new;
 }
 
+// a space is removable if it's followed or preceded by one of these characters
+// ex: "var = 5" would become "var=5"
 bool is_removable(char pre, char post) {
     return (pre == '=' || pre == ';' || pre == ' ' || pre == ',' ||
     post == '=' || post == ';' || post == ' ' || post == ',' );    

@@ -20,8 +20,10 @@ int main(int argc, char *argv[]) {
 	n_errors = 0;
 	comment_lines_del = 0;
 
-	if (argc == 1)
-		return 1; // no input file
+	if (argc == 1){
+		fprintf(stderr, "Error: missing input file.\n");
+		return 1;
+	}
 
 	int i;
 	char *input;
@@ -32,9 +34,7 @@ int main(int argc, char *argv[]) {
 		input = (char *)calloc(strlen(argv[1]), sizeof(char));
 		strcpy(input, argv[1]);
 		i=2;
-	} else {
-		i=1;
-	}
+	} else i=1;
 
 	while (i < argc) {
 		// eseguito con un solo parametro: nome del file di input
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 	init_array(&custom_types);
 
 	FILE *buffer;
-	buffer = output ? fopen(output, "w") : fopen("buffer.temp", "w+"); //tristate su
+	buffer = output ? fopen(output, "w") : fopen("buffer.temp", "w+"); // chooses the output file (given or default)
 
 	if (!read_file(input, buffer)) {
 		fclose(buffer);
