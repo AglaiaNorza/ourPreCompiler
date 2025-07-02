@@ -22,19 +22,22 @@ int main(int argc, char *argv[]) {
 
 	if (argc == 1)
 		return 1; // no input file
-	int i = 1;
 
+	int i;
 	char *input;
 	char *output = NULL;
 	bool verbose = false;
 
+	if (argv[1][0] != '-') {
+		input = (char *)calloc(strlen(argv[1]), sizeof(char));
+		strcpy(input, argv[1]);
+		i=2;
+	} else {
+		i=1;
+	}
+
 	while (i < argc) {
 		// eseguito con un solo parametro: nome del file di input
-		if (argv[1][0] != '-') {
-			input = (char *)calloc(strlen(argv[i]), sizeof(char));
-			strcpy(input, argv[i]);
-			break;
-		}
 		// eseguito con flag per file di input
 		if (!strcmp(argv[i], "-i")) {
 			input = (char *)calloc(strlen(argv[++i]), sizeof(char));
