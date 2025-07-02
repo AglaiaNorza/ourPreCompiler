@@ -24,7 +24,7 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
     int offset;
     bool vars = true;
     
-    //handles define's
+    //handles defines
     if(strchr(line, ';') == NULL) {
         if (strstr(line, "#define") != NULL) //huh
             variables_checked++;
@@ -35,10 +35,9 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
         in_enum = false;
         return vars;
     } else if (in_enum) return vars;
-
-    //handles if current line is struct closing
-    // TODO: sbagliato ??? chiude la dichiarazione di uno struct dopo la dichiarazione del primo attributo (è presente `;`, e in_sruct == true)
-    if (in_struct && strchr(line, ';') != NULL) {
+    
+    // handles whether current line is struct closing
+    if (in_struct && strstr(line, "};") != NULL) {
         in_struct = false;
         return vars;
     }
