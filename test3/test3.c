@@ -1,4 +1,6 @@
+/* #include <libreriachenonesiste.h>
 #include <libreriafalsa.h>
+ciao */
 
 int numeri[123] = {1, 2, 3}; int ciao;
 int nu[23]dsa;

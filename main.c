@@ -147,8 +147,14 @@ bool read_file(char *input, FILE *buffer) {
 	while ((line_len = getline(&line, &len, file_in)) != -1) {
 		total_lines++;
 		line_number++;
+        // have to check for comments first !
+
+		// check if the line doesn't need to be checked for variable syntax, etc
+        // skip = true: can skip
+		int skip = handle_comments(line, &in_comment, &multiline_comm);
+
 		// recursively append all includes in the file
-		if (line[0] == '#' && strstr(line, "include") != NULL) {
+		if (!skip && line[0] == '#' && strstr(line, "include") != NULL) {
 			files_included++;
 			char *lib_name;
 			char *last = NULL;
@@ -168,14 +174,11 @@ bool read_file(char *input, FILE *buffer) {
 			} else {
 				strncpy(lib_name, &line[10], lib_len);
 			}
+            printf("reading file: %s \n", lib_name);
 			read_file(lib_name, buffer);
             free(lib_name);
 			continue;
 		}
-
-		// check if the line doesn't need to be checked for variable syntax, etc
-        // skip = true: can skip
-		int skip = handle_comments(line, &in_comment, &multiline_comm);
 		
 		if(!skip){
 			if (lines_to_skip!=-1 && strstr(line, "int main(")) {

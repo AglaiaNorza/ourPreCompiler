@@ -1,7 +1,3 @@
- 
-
-
-
 #define CONST1 37
 #define PI 3.14
 
