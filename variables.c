@@ -135,7 +135,8 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
     } while (type && token != NULL);
 
     char *token_copy = strdup(token);
-    line = strstr(line, token); // copy rest of line (no types) to line
+    printf("line:%s, token:%s\n",line,token_copy);
+    line = strstr(line, token_copy); // copy rest of line (no types) to line
     free(temp);
     
     if(def) {
@@ -186,7 +187,7 @@ void check_error(char *var_name, array *errors, char *file_name, int line_num) {
     if (strchr(var_name, ';')!=NULL) {
         var_name[strlen(var_name)-1]='\0';
     }
-    if (var_name[0] >= '0' && var_name[0] <= '9') {
+    if ((var_name[0] >= '0' && var_name[0] <= '9') || ((var_name[0]=='&' || var_name[0]=='*') && var_name[1] >= '0' && var_name[1] <= '9')) {
         handle_error(errors, file_name, line_num);
     }
 
@@ -197,6 +198,7 @@ void check_error(char *var_name, array *errors, char *file_name, int line_num) {
     }
     if (strcspn(var_name, " !@#$%^()[]{}+-/\\|:?><~") != strlen(var_name) ||
      (strcspn(var_name, "&*") != 0) && strcspn(var_name, "&*")!= strlen(var_name)) {
+        printf("%s\n", var_name);
         handle_error(errors, file_name, line_num);
     }
     for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) {
