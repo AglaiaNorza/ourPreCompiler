@@ -83,6 +83,21 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
 // takes an istruction as an input, iterates to the vame of the variable (if present) and checks for its validity
 // returns if any variables were declared in the current instruction
 bool check_variables(char* line, array *errors, int line_num, char *file_name) {
+
+    // if it's an array, extract its name
+    if (is_array(line)) {
+        printf("array found!!\n");
+        // looks for the last [ opening (end of variable name)
+        int last = 0;
+        for(int i=0; i<strlen(line); i++){
+            if(line[i] == '['){
+                last = i;
+            }
+        }
+        // the variable is cut off, keeping only its name
+        line[last] = '\0';
+    }
+
     char *temp = (char *)calloc(strlen(line), sizeof(char));
     temp=strcpy(temp, line);
     char *token = strtok(temp, " ");
@@ -165,6 +180,9 @@ void handle_error(array *errors, char *file_name, int line_num) {
 
 // checks if a variable name is legal
 void check_error(char *var_name, array *errors, char *file_name, int line_num) {
+
+    //printf("checking, %s\n", var_name);
+
     if (strchr(var_name, ';')!=NULL) {
         var_name[strlen(var_name)-1]='\0';
     }
@@ -213,4 +231,34 @@ char* strip(char* line) {
 bool is_removable(char pre, char post) {
     return (pre == '=' || pre == ';' || pre == ' ' || pre == ',' ||
     post == '=' || post == ';' || post == ' ' || post == ',' );    
+}
+
+// checks whether the current variable matches an array declaration or initialisation
+bool is_array(const char *str) {
+    printf("checking: %s\n", str);
+    regex_t regdecl, reginit;
+
+    // checks for [] with any number of digits in it, followed by optional spaces and a ;
+    const char *array_decl = "\\[[0-9]*\\]\\s*;";
+    // checks for [] with any number of digits in it, followed by optional spaces
+    // and an =, then a {} containing anything, then optional spaces and a ;
+    // ( '[^}]' = any character that isn't '}')
+    const char *array_init = "\\[[0-9]*\\]\\s*=\\s*\\{[^}]*\\}\\s*;";
+    
+    // compiles the regexes
+    if (regcomp(&regdecl, array_decl, REG_EXTENDED) || regcomp(&reginit, array_init, REG_EXTENDED)) {
+        fprintf(stderr, "Error compiling RegEx");
+        return false;
+    }
+
+    // regexec returns 0 if match is found
+    int decl = regexec(&regdecl, str, 0, NULL, 0);
+    //printf("%s, decl match: %d\n", str, res1);
+    int init = regexec(&reginit, str, 0, NULL, 0);
+    //printf("%s, init match: %d\n", str, res2);
+    regfree(&regdecl);
+    regfree(&reginit);
+
+    // can't do simple boolean logic because regexec can return numbers other than 0 and 1
+    return ( (decl == 0) != (init == 0) ); // essentially a xor
 }
