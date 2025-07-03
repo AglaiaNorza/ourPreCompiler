@@ -181,13 +181,18 @@ void handle_error(array *errors, char *file_name, int line_num) {
 
 // checks if a variable name is legal
 void check_error(char *var_name, array *errors, char *file_name, int line_num) {
+    char *valid = var_name;
+    while (*valid == '*') {
+        valid++;
+    }
+    memmove(var_name, valid, strlen(valid)+1);  // +1 per copiare anche '\0'
 
     //printf("checking, %s\n", var_name);
 
     if (strchr(var_name, ';')!=NULL) {
         var_name[strlen(var_name)-1]='\0';
     }
-    if ((var_name[0] >= '0' && var_name[0] <= '9') || ((var_name[0]=='&' || var_name[0]=='*') && var_name[1] >= '0' && var_name[1] <= '9')) {
+    if ((var_name[0] >= '0' && var_name[0] <= '9')) {
         handle_error(errors, file_name, line_num);
     }
 
@@ -196,8 +201,7 @@ void check_error(char *var_name, array *errors, char *file_name, int line_num) {
         if (var_name[j] == '=')
             break; // next variable name
     }
-    if (strcspn(var_name, " !@#$%^()[]{}+-/\\|:?><~") != strlen(var_name) ||
-     (strcspn(var_name, "&*") != 0) && strcspn(var_name, "&*")!= strlen(var_name)) {
+    if (strcspn(var_name, " !@#$%^()[]{}+-/\\|:?><~&*") != strlen(var_name)) {
         printf("%s\n", var_name);
         handle_error(errors, file_name, line_num);
     }
