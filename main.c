@@ -187,6 +187,7 @@ bool read_file(char *input, FILE *buffer) {
 			}
 			if (lines_to_skip == 0){
 				if (!preprocess_variables(line, &errors, line_number, input)) lines_to_skip = -1; // no more variable declarations
+        		printf("found\n");
 			} else lines_to_skip--;
 			fputs(line, buffer);
 		} else {comment_lines_del++;} //because current line was skipped

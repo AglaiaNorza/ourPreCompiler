@@ -57,7 +57,9 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
         in_struct = true;
         vars = vars && check_variables(line, errors, line_num, file_name);
         if (strchr(line, ';') != NULL) { // check for declarations inline
-            line = strchr(line, '{')+1;
+            if (strchr(line, '{')!=NULL) {
+                line = strchr(line, '{')+1;
+            } else return vars;
         } else if (strchr(line, '}') != NULL) { // struct in one line (TODO: non proprio, `;` potrebbe essere alla riga successiva)
             in_struct=false; //prima era in_enum = false
             return vars;
@@ -206,7 +208,7 @@ void check_error(char *var_name, array *errors, char *file_name, int line_num) {
         //printf("var not valid: %s\n", var_name);
         handle_error(errors, file_name, line_num);
     }
-    for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) {
+    for (int i = 0; i<sizeof(keywords)/sizeof(keywords[0]); i++) {
         if (!strcmp(keywords[i], var_name)) {
             handle_error(errors, file_name, line_num);
             break;
