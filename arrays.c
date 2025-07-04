@@ -13,8 +13,6 @@ void init_array(array *arr) {
 }
 
 void append(array *arr, const char *value) {
-    //arr->items=realloc(arr->items, arr->size * sizeof(char *));
-    //arr->items[arr->size-1] = strdup(value); 
     arr->items = realloc(arr->items, (arr->size + 1) * sizeof(char *));
     arr->items[arr->size] = strdup(value);
     arr->size=arr->size+1;

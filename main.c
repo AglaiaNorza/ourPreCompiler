@@ -42,22 +42,18 @@ int main(int argc, char *argv[]) {
 		if (!strcmp(argv[i], "-i")) {
 			input = (char *)calloc(strlen(argv[++i]), sizeof(char));
 			strcpy(input, argv[i++]);
-			//printf("input: %s \n", input);
 			// eseguito con long flag per file di input
 		} else if (!strncmp(argv[i], "--in", 4)) {
 			input = (char *)calloc(strlen(argv[i]) - 5, sizeof(char));
 			strcpy(input, &argv[i++][5]);
-			//printf("input: %s \n", input);
 			// eseguito con flag per file di output
 		} else if (!strcmp(argv[i], "-o")) {
 			output = (char *)calloc(strlen(argv[++i]), sizeof(char));
 			strcpy(output, argv[i++]);
-			//printf("output: %s \n", output);
 			// eseguito con long flag per file di output
 		} else if (!strncmp(argv[i], "--out", 5)) {
 			output = (char *)calloc(strlen(argv[i]) - 6, sizeof(char));
 			strcpy(output, &argv[i++][6]);
-			//printf("output: %s \n", output);
 			// eseguito con flag verbose
 		} else if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--verbose")) {
 			i++;
@@ -159,7 +155,7 @@ bool read_file(char *input, FILE *buffer) {
 			char *lib_name;
 			char *last = NULL;
 			int lib_len = line_len - 11;
-            //
+            
 			// skips to last occurence of '/' in the input path given (because all includes must be in the same dir of the input file)
 			if ((last = strrchr(input, '/'))) {
 				lib_len += (last-input+1); //difference of addresses gives position of '/'
@@ -174,7 +170,6 @@ bool read_file(char *input, FILE *buffer) {
 			} else {
 				strncpy(lib_name, &line[10], lib_len);
 			}
-            printf("reading file: %s \n", lib_name);
 			read_file(lib_name, buffer);
             free(lib_name);
 			continue;
@@ -187,7 +182,6 @@ bool read_file(char *input, FILE *buffer) {
 			}
 			if (lines_to_skip == 0){
 				if (!preprocess_variables(line, &errors, line_number, input)) lines_to_skip = -1; // no more variable declarations
-        		printf("found\n");
 			} else lines_to_skip--;
 			fputs(line, buffer);
 		} else {comment_lines_del++;} //because current line was skipped

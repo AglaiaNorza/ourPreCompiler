@@ -57,11 +57,11 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
         in_struct = true;
         vars = vars && check_variables(line, errors, line_num, file_name);
         if (strchr(line, ';') != NULL) { // check for declarations inline
-            if (strchr(line, '{')!=NULL) {
+            if (strchr(line, '{')!=NULL) { // to check if it is a a declaration of struct or an assignment
                 line = strchr(line, '{')+1;
             } else return vars;
         } else if (strchr(line, '}') != NULL) { // struct in one line (TODO: non proprio, `;` potrebbe essere alla riga successiva)
-            in_struct=false; //prima era in_enum = false
+            in_struct=false;
             return vars;
         } else return vars;
     }
@@ -77,8 +77,6 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
         free(temp);
     }
     //TODO: secondo me da togliere
-    //free(semicolon);
-    //free(enum_idx);
     return vars;
 }
 
@@ -88,7 +86,6 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
 
     // if it's an array, extract its name
     if (is_array(line)) {
-        //printf("array found!!\n");
         // looks for the last [ opening (end of variable name)
         int last = 0;
         for(int i=0; i<strlen(line); i++){
@@ -101,6 +98,7 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
     char *temp = (char *)calloc(strlen(line), sizeof(char));
     temp=strcpy(temp, line);
     char *token = strtok(temp, " ");
+    free(temp);
     int skip_len=0;
     bool def = false;
     if(token == NULL) return true; // no tokens are found
@@ -125,7 +123,6 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
         for (int i=0; i<custom_types.size; i++) {
             if(!strcmp(custom_types.items[i], token)) {
                 foundtype = true;
-                printf("found custom type!! and def = %d \n", def);
             }
         }
         if (foundtype) {
@@ -137,12 +134,9 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
     } while (type && token != NULL);
 
     char *token_copy = strdup(token);
-    printf("line:%s, token:%s\n",line,token_copy);
     line = strstr(line, token_copy); // copy rest of line (no types) to line (no copying, just advancing the pointer)
-    free(temp);
     
     if(def) {
-        printf("inside def if\n");
 		// we use ';' for typedef
         token_copy[strcspn(token_copy, ";{")]='\0';
 
@@ -190,8 +184,6 @@ void check_error(char *var_name, array *errors, char *file_name, int line_num) {
     }
     memmove(var_name, valid, strlen(valid)+1);  // +1 per copiare anche '\0'
 
-    //printf("checking, %s\n", var_name);
-
     if (strchr(var_name, ';')!=NULL) {
         var_name[strlen(var_name)-1]='\0';
     }
@@ -205,7 +197,6 @@ void check_error(char *var_name, array *errors, char *file_name, int line_num) {
     }
 
     if (strcspn(var_name, " !@#$%^()[]{}+-/\\|:?><~&*") != strlen(var_name)) {
-        //printf("var not valid: %s\n", var_name);
         handle_error(errors, file_name, line_num);
     }
     for (int i = 0; i<sizeof(keywords)/sizeof(keywords[0]); i++) {
@@ -244,7 +235,6 @@ bool is_removable(char pre, char post) {
 
 // checks whether the current variable matches an array declaration or initialisation
 bool is_array(const char *str) {
-    //printf("checking: %s\n", str);
     regex_t regdecl, reginit;
 
     // checks for [] with any number of digits in it, followed by optional spaces and a ;
@@ -262,9 +252,7 @@ bool is_array(const char *str) {
 
     // regexec returns 0 if match is found
     int decl = regexec(&regdecl, str, 0, NULL, 0);
-    //printf("%s, decl match: %d\n", str, res1);
     int init = regexec(&reginit, str, 0, NULL, 0);
-    //printf("%s, init match: %d\n", str, res2);
     regfree(&regdecl);
     regfree(&reginit);
 
