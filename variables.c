@@ -76,7 +76,6 @@ bool preprocess_variables(char* line, array *errors, int line_num, char *file_na
         line += offset;
         free(temp);
     }
-    //TODO: secondo me da togliere
     return vars;
 }
 
@@ -98,7 +97,6 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
     char *temp = (char *)calloc(strlen(line), sizeof(char));
     temp=strcpy(temp, line);
     char *token = strtok(temp, " ");
-    free(temp);
     int skip_len=0;
     bool def = false;
     if(token == NULL) return true; // no tokens are found
