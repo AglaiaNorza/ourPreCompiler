@@ -8,15 +8,16 @@ char* bo[oh [10];
 int a[]sda[dsa[10];
 char *test="test 123";
 
-struct struttura {
-    int gatto;
-    int 5errore;
-};
-
 long long int interolungo;
 int numeri[1322];
 
+int ciao1, ciao2;
 float var1, var2, var3;
+
+struct struttura {
+    int numero;
+};
+struct struttura 4struct;
 
 int main(int argc, char const *argv[])
 {
