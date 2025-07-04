@@ -12,7 +12,11 @@ long long int interolungo;
 int numeri[1322];
 
 int ciao1, ciao2;
-float var1, var2, var3;
+float var1, var2, var3; //commento
+
+/*
+int variabileincommento;
+*/
 
 struct struttura {
     int numero;
