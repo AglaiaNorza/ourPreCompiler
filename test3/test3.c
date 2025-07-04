@@ -6,6 +6,7 @@ int numeri[];
 int numeri[5];
 char* bo[oh [10];
 int a[]sda[dsa[10];
+char *test="test 123";
 
 struct struttura {
     int gatto;

@@ -196,11 +196,11 @@ void check_error(char *var_name, array *errors, char *file_name, int line_num) {
         handle_error(errors, file_name, line_num);
     }
 
-    // if there is a `=` in the variable name, it is counted as the end of the variable name (everything that comes after `=` is considered part of the assignment to the variable)
-    for (int j = 0; j < strlen(var_name); j++) {
-        if (var_name[j] == '=')
-            break; // next variable name
+    // keep just the variable name, by removing everything after the first equals
+    if (strchr(var_name, '=')!=NULL) {
+        var_name = strtok(var_name, "=");
     }
+
     if (strcspn(var_name, " !@#$%^()[]{}+-/\\|:?><~&*") != strlen(var_name)) {
         printf("%s\n", var_name);
         handle_error(errors, file_name, line_num);
