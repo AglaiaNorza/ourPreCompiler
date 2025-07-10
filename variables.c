@@ -111,11 +111,10 @@ bool check_variables(char* line, array *errors, int line_num, char *file_name) {
         for (int i=0; i<sizeof(valid_types)/sizeof(valid_types[0]); i++) {
             if(!strcmp(valid_types[i], token)) {
                 foundtype = true;
-                if(!strcmp(valid_types[i], "typedef") || !strcmp(valid_types[i], "enum") 
-                || (!strcmp(valid_types[i], "struct"))){
-                    //NEW CODE DIEGO 2025
-                    if(!(strchr(line, '{') == NULL && strchr(line, ';') != NULL)) def = true;
-                }
+                if(!strcmp(valid_types[i], "typedef") || !strcmp(valid_types[i], "enum")){
+                    def = true;
+                } else if (!strcmp(valid_types[i], "struct" && 
+                    !(strchr(line, '{') == NULL && strchr(line, ';') != NULL) )) def = true;
             }
         }
         for (int i=0; i<custom_types.size; i++) {
