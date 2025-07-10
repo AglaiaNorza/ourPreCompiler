@@ -15,9 +15,9 @@ int global_counter;
 const int 4backup=25;
 enum Level{LOW,MEDIUM,HIGH}; 
 struct le { int mie;
-	char 4giganteschepalle;
+	char 4giga;
 };
-char idk; //PISELLI GIGANTI
+char idk; //ppppp
 
 int main(int argc, char *args[])
 {
