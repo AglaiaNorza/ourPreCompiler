@@ -1,4 +1,63 @@
-# documentazione progetto 1, os1: ourPreCompiler
+# documentation for the 1st Operating Systems 2 course: ourPreCompiler
+
+## main
+
+after storing the input arguments, the function `read_file()` is called on the input file
+
+* `read_file()` is responsible for reading each line of the input file, and:
+
+  * recursively appending (writing bottom-up) all the `#include` directives from the input file
+  * handling comments, in order to check whether it's possible to skip variable checks for one or more lines
+  * checking if the `main()` function is entered (to skip checks for the lines involved)
+  * calling the function that handles variable declaration checking: `preprocess_variables()`
+* the return value is `true` if the file was read correctly, `false` otherwise
+
+## comment handling
+
+### `handle_comments()`
+
+the function checks for both types of comments:
+
+* if it finds a `//` comment, it stores the part of the line that is not part of the comment (to its left), in order to write it to the output
+* if it finds a `/* ... */` comment, it calls the function `multiline_comments()`
+  the function modifies the variable `line`, which is received as input and then inserted into the output code in `read_file()`
+
+### `multiline_comments()`
+
+the function handles the start and end of multiline comments:
+
+* it iterates over each character of the input line
+* if the comment is closed (which does not prevent other comments of the same/different type from being opened within the same line), it stores the characters outside the comment
+* it handles the case in which the entire line can be skipped
+
+## variable declaration
+
+### `preprocess_variables()`
+
+the function takes a line of code as input, and, in order:
+
+* handles `#define`s, if present
+* handles the end of enum/struct declarations
+* handles enum/struct declarations
+* handles normal instructions, splitting them (if multiple instructions are present in a single line of code), and invoking `check_variables()`
+
+### `check_variables()`
+
+iterates over the words of the instruction, and performs a do-while loop, in which it checks whether the current word is a recognized type, to get to the name of the variable defined in the instruction (which needs to be checked). once the types have been skipped, the function `strip()` is invoked
+
+* `strip()` removes spaces, if they are considered "removable", from the remaining part of the instruction
+* if the instruction contains a definition, the new type gets saved in the `custom_types` array
+* then, the function `check_error()` is invoked
+
+### `check_error()`
+
+the function takes as input a string containing the name of a variable (and possibly its following assignment), and performs a series of checks on it.
+
+* if the string results positive to one of the checks, the function `handle_error()` is called. the function stores the error 
+* if no error is found, the code proceeds normally (the variable name is valid)
+
+
+# documentazione progetto 1, os2: ourPreCompiler
 
 ## main
 dopo aver memorizzato gli argomenti di input, viene chiamata la funzione `read_file()` sul file di input
