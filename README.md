@@ -1,102 +1,138 @@
 # ourPreCompiler
-myPreCompiler è un'applicazione che, dato un file contenente del codice C, lo elabora come segue
-1) risolve le direttive `#include`, ovvero include il contenuto dei file argomento della direttiva `#include`;
-2) controlla se sono state dichiarate variabili con nome non valido, ovvero identificatori non validi (ad es. x-ray, two&four, 5brothers);
-3) elimina tutti i commenti;
-4) produce un file di output contenente il codice modificato, ovvero il file di input estenso con gli include e senza commenti;
-5) produce le statistiche di elaborazione riportate nella sezione "Specifiche"
 
-## Assunzioni
-Si può assumere che:
-1) i file inclusi mediante la direttiva `#include` siano memorizzati nella CWD
-2) il file contenente il codice C fornito come input sia costituito dal solo blocco di codice della funzione main e che non ci siano altre funzioni
-3) tutte le variabili locali siano dichiarate all'inizio della funzione main in righe contigue e che le variabili globali siano dichiarate prima del main in righe contigue;
-4) i tipi di dato usati nella dichiarazione delle variabili siano corret;
- ;
+`myPreCompiler` is a simple **C pre-compiler tool**. Given a C source file, it performs the following steps:
 
-## Specifiche
+1. Resolves `#include` directives (includes the content of the files that are specified in the `#include` directives)
+3. Checks whether declared variable names are valid identifiers (e.g., rejects names like `x-ray`, `two&four`, `5brothers`).
+4. Removes all comments.
+5. Produces an output file containing the modified code, expanded with the includes, and without comments.
+6. Generates processing statistics specified in the "Statistics" section.
+
+---
+
+## Assumptions
+
+* Included files (`#include`) are located in the **current working directory (CWD)**.
+* The input file contains only the `main` function block, and there are no other functions.
+* All local variables are declared at the beginning of `main` in contiguous lines.
+* Global variables are declared before `main` in contiguous lines.
+* Data types used in variable declarations are correct.
+
+---
+
+## Specifications
+
 ### Input
-Il programma prevede tre parametri di input:
 
--  `-i, --in` (notazione doppio trattino) per specificare il file di input
-    
-- `-o --out` (notazione doppio trattino) per specificare il file di output
-    
-- `-v, --verbose` (notazione doppio trattino) per produrre o meno come output le statistiche di elaborazione
-    
+The program accepts **three command-line options**:
 
-Il file di input, ovvero il file contenente il codice C da processare, è un parametro obbligatorio e può essere passato come argomento dell'opzione `-i` o `--in`. Ad esempio 
+* `-i, --in` : input file (mandatory)
+* `-o, --out` : output file 
+* `-v, --verbose` : enable/disable statistics output
 
-    myPreCompiler nome_file_input.c
+Examples:
 
-in questo caso il file `nome_file_input.c` verrà processato dal programma e l'output prodotto su stdout (vedi sezione Output)
+```bash
+myPreCompiler input_file.c
+myPreCompiler -i input_file.c
+myPreCompiler --in=input_file.c
+```
 
-    myPreCompiler -i nome_file_input.c 
-    myPreCompiler --in=nome_file_input.c
+If `-o` is not provided, the processed code is written to **stdout**.
 
-in questo caso il file `nome_file_input.c` verra' processato dal programma e potra' essere utilizzata l'opzione `-o`, `--out` per specificare il file di output (vedi sezione Output).
+---
 
-### **Output**
-Devono essere previste due modalità di output.
+### Output
 
-Nella prima, viene specificato come parametro di input del programma il nome del file di output quale argomento dell'opzione `-o, --out`. 
+There are two output modes:
 
-Nella seconda, se l'opzione `-o` non viene usata, il risultato del processamento del file di input viene inviato allo stdout.
+1. **To file**: If `-o / --out` is specified, the processed result is written to the file.
 
-#### Esempi di esecuzione:
+   ```bash
+   myPreCompiler -i input_file.c -o output_file
+   ```
 
-    myPreCompiler -i nome_file_input.c -o nome_file_output
+2. **To stdout**: If `-o` is not specified, the processed result is printed.
 
-al termine del programma, il file `nome_file_output` conterra' il codice processato.
+   ```bash
+   myPreCompiler -i input_file.c
+   myPreCompiler input_file.c
+   ```
 
-    myPreCompiler -i nome_file_input.c
-    myPreCompiler nome_file_input.c
+   Output sent to stdout can be redirected to a file like one normally would:
+   ```
+   myPreCompiler -i input_file.c > output_file
+   ```
 
-prima di terminare il programma invia su stdout il risultato del processamento
+---
 
-    myPreCompiler -i nome_file_input.c > nome_file_output
+### Statistics
 
-prima di terminare il programma invia sullo stdout il risultato del processamento che viene ridirezionato nel file `nome_file_output`.
+When the `-v, --verbose` option is enabled, the program outputs processing statistics, including:
 
-Il programma myPreCompiler deve altresì poter restituire come risultato, sullo standard output, le seguenti statistiche di elaborazione:
-- numero di variabili controllate
-- numero di errori rilevati
-- per ogni errore rilevato, nome del file in cui e' stato rilevato e numero di riga nel file.
-- numero di righe di commento eliminate
-- numero di file inclusi
-- per il file di input, la dimensione in byte ed il numero di righe (pre-processamento)
-- per ogni file incluso, dimensione in byte e numero di righe (pre-processamento)
-- numero di righe e dimensione dell'output
+* Number of variables checked
+* Number of errors detected
+* For each error: file name and line number
+* Number of comment lines removed
+* Number of files included
+* For the input file: size in bytes and number of lines (pre-processing)
+* For each included file: size in bytes and number of lines (pre-processing)
+* Final output size in bytes and number of lines
 
-L'output sopra riportato deve poter essere abilitato/disabilitato mediante l'opzione `-v`, `--verbose`. Ad esempio
+Example:
 
-    myPreCompiler -v -c nome_file_input.c -o nome_file_output
+```bash
+myPreCompiler -v -i input_file.c -o output_file
+```
 
-restituisce sullo standard output le statistiche sopra menzionate, mentre 
+> **Optional:** We've written the statistics to `stderr` instead of `stdout` to allow redirection of code and logs separately.
 
-    myPreCompiler -c nome_file_input.c -o nome_file_output
+---
 
-non produce sullo standard output le statistiche sopra menzionate.
+### Error Handling
 
-> (Opzionale: Restituire le statistiche di elaborazione sullo standard error invece che sullo standard output in modo da poter ridirezionare il file processato e le statistiche di elaborazione su due file diversi quando si seleziona la seconda modalità di output)
+The program handles the following errors:
 
-### Errori
-L'applicazione sviluppata deve gestire i seguenti errori:
+* Invalid command-line arguments or options
+* Failed to open input or included files
+* File closing errors
+* File reading errors (e.g., empty or corrupted file)
+* File writing errors
 
-- errore nei parametri di input, opzioni e relativi argomenti specificate da linea di comando
-- errore di apertura dei file di input o specificati come argomento dell'include
-- errore di chiusura file
-- errore di lettura da file - ad esempio file vuoto o corrotto
-- errore di scrittura su file
+---
 
-### Struttura del programma e uso della memoria
-- Il programma non deve essere monolotico ma composto da un main e varie funzioni che sviluppano le funzinalita' principali e funzionalita' di supporto.
-- Il programma deve essere organizzato in almeno tre file: un file contenente il main, almeno un file contenente le funzioni, ed almeno un header file.
-- Nella scelta delle strutture dati deve essere privilegiata l'allocazione dinamica della memoria.
+### Program Structure
 
-In sede di esame il codice deve essere compilato da linea di comando usando il gcc.
+* The program isn't monolithic. It's composed of:
+
+  * `main.c` file,
+  * a `variables.c` file, which handles variable analyses, with its own `variables.h` header file
+  * a `comments.c` file, which handles comments, with its own `comments.h` header file
+  * an `arrays` file, where we defined a simple dynamic array
+  * a `globals.c` file, with our global variables, used for the statistics
+
+* The use of **dynamic memory allocation** was prioritised in the program
+
+---
 
 ### Testing
-Deve essere provato il funzionamento del programma attraverso: 
-- un pool di file fornito dal docente (vedi file allegati - ne seguiranno altri)
-- un caso di test sviluppato dai componenti del gruppo
+
+The program can be tested with:
+
+* A pool of files provided by the professor (test1 and test2)
+* Some custom tests we created to cover more peculiar cases (test3)
+
+---
+
+## Usage Summary
+
+```bash
+# Process file and write to stdout
+myPreCompiler input.c  
+
+# Process file and save output
+myPreCompiler -i input.c -o output.c  
+
+# Process file and show statistics
+myPreCompiler -v -i input.c  
+```
